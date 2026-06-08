@@ -13,9 +13,15 @@ namespace CelikenVP
 
         private List<GameObject> instantiatedRow = new();
 
-        private void Start()
+        private void OnEnable()
         {
+            ClearChoices();
             Invoke(nameof(ShowRandomChoice), .1f);
+        }
+
+        public void SetAvailableItems(List<ObjectSO> items)
+        {
+            listItem = new List<ObjectSO>(items);
         }
 
         private void ShowRandomChoice()
@@ -31,10 +37,13 @@ namespace CelikenVP
 
         public void OnClick(ObjectSO item)
         {
-            if (Player.Instance.PickItem(item))
+            if (Player.Instance != null && Player.Instance.PickItem(item))
                 RemoveItem(item);
             ClearChoices();
-            Invoke(nameof(ShowRandomChoice), .1f);
+            if (GameManager.Instance != null)
+                GameManager.Instance.FinishUpgradeSelection();
+            else
+                gameObject.SetActive(false);
         }
 
         private void ClearChoices()
@@ -48,7 +57,12 @@ namespace CelikenVP
 
         private List<ObjectSO> PickRandomItems(int amount)
         {
-            List<ObjectSO> items = new List<ObjectSO>(listItem);
+            List<ObjectSO> items = new List<ObjectSO>();
+            foreach (ObjectSO item in listItem)
+            {
+                if (Player.Instance == null || Player.Instance.CanPickItem(item))
+                    items.Add(item);
+            }
             List<ObjectSO> res = new();
             if (amount > items.Count) return items;
 

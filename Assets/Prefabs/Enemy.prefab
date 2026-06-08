@@ -154,7 +154,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   speed: 3
-  xpGemPrefab: {fileID: 4270336087914972182, guid: 2ac8d8a4dadc072408430676f31e6069, type: 3}
+  maxHealth: 1
+  blueXpGemPrefab: {fileID: 8620064864296546271, guid: 42ef98748a2f6354293acf9be117b8a1, type: 3}
+  redXpGemPrefab: {fileID: 4645498630408491348, guid: d15ab39f098962345be45909f7de678c, type: 3}
   deathEffectPrefab: {fileID: 0}
 --- !u!50 &6252895276114688376
 Rigidbody2D:

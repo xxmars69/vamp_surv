@@ -41,11 +41,11 @@ namespace CelikenVP
         {
             public static event EventHandler<StatType> OnStatUpdated;
 
-            [SerializeField] private StatType type;
-            [SerializeField] private StackingMode stacking;
-            [SerializeField] private float baseValue = 0f;
-            [SerializeField] private float maxValue = -1f;
-            [SerializeField] private float currentValue;
+            [SerializeField] public StatType type;
+            [SerializeField] public StackingMode stacking;
+            [SerializeField] public float baseValue = 0f;
+            [SerializeField] public float maxValue = -1f;
+            [SerializeField] public float currentValue;
 
             private List<Upgrade> listUpgrade = new();
 
@@ -62,6 +62,19 @@ namespace CelikenVP
                         return Mathf.CeilToInt(val);
                     return val;
                 }
+            }
+
+            public Stat()
+            {
+            }
+
+            private Stat(StatType statType, StackingMode stackingMode, float baseStatValue, float maxStatValue)
+            {
+                type = statType;
+                stacking = stackingMode;
+                baseValue = baseStatValue;
+                maxValue = maxStatValue;
+                currentValue = baseStatValue;
             }
 
             public void ComputeValue()
@@ -92,6 +105,11 @@ namespace CelikenVP
                 listUpgrade?.Clear();
                 ComputeValue();
             }
+
+            public static Stat CreateDefault(StatType statType, StackingMode stackingMode, float baseStatValue, float maxStatValue)
+            {
+                return new Stat(statType, stackingMode, baseStatValue, maxStatValue);
+            }
         }
 
         [SerializeField] private Dictionary<StatType, Stat> stats = new();
@@ -102,6 +120,7 @@ namespace CelikenVP
 
         public bool AddItem(ObjectSO item)
         {
+            EnsureStats();
             if (levelObject.ContainsKey(item))
                 levelObject[item]++;
             else
@@ -109,14 +128,23 @@ namespace CelikenVP
             levelObject[item] = Mathf.Clamp(levelObject[item], 0, item.objectMaxLevel);
             foreach (var upgrade in item.upgrades)
             {
-                stats[upgrade.StatType].AddUpgrade(upgrade);
+                GetStat(upgrade.StatType).AddUpgrade(upgrade);
             }
             return levelObject[item] == item.objectMaxLevel;
         }
 
         public Stat GetStat(StatType type)
         {
+            EnsureStats();
+            if (!stats.ContainsKey(type))
+                stats[type] = CreateDefaultStat(type);
             return stats[type];
+        }
+
+        public bool TryGetStat(StatType type, out Stat stat)
+        {
+            EnsureStats();
+            return stats.TryGetValue(type, out stat);
         }
 
         public int GetItemLevel(ObjectSO item)
@@ -128,11 +156,69 @@ namespace CelikenVP
 
         public void ClearObjects()
         {
+            EnsureStats();
             levelObject.Clear();
             foreach (Stat stat in stats.Values)
             {
                 stat.ClearStatUpgrades();
             }
+        }
+
+        private void EnsureStats()
+        {
+            stats ??= new Dictionary<StatType, Stat>();
+            foreach (StatType type in Enum.GetValues(typeof(StatType)))
+            {
+                if (!stats.ContainsKey(type))
+                    stats[type] = CreateDefaultStat(type);
+            }
+        }
+
+        private Stat CreateDefaultStat(StatType type)
+        {
+            return Stat.CreateDefault(type, GetDefaultStacking(type), GetDefaultBaseValue(type), GetDefaultMaxValue(type));
+        }
+
+        private StackingMode GetDefaultStacking(StatType type)
+        {
+            return type switch
+            {
+                StatType.Armor => StackingMode.AdditiveInt,
+                StatType.MaxHealth => StackingMode.AdditiveInt,
+                StatType.Recovery => StackingMode.Additive,
+                StatType.Cooldown => StackingMode.AdditiveInt,
+                StatType.Amount => StackingMode.AdditiveInt,
+                StatType.Magnet => StackingMode.AdditiveInt,
+                _ => StackingMode.MultiplicativeInt,
+            };
+        }
+
+        private float GetDefaultBaseValue(StatType type)
+        {
+            return type switch
+            {
+                StatType.Armor => 0f,
+                StatType.MaxHealth => 6f,
+                StatType.Recovery => 0f,
+                StatType.Cooldown => 0f,
+                StatType.Amount => 1f,
+                StatType.Magnet => 30f,
+                _ => 100f,
+            };
+        }
+
+        private float GetDefaultMaxValue(StatType type)
+        {
+            return type switch
+            {
+                StatType.Cooldown => 90f,
+                StatType.Amount => 10f,
+                StatType.Might => 1000f,
+                StatType.Area => 1000f,
+                StatType.Speed => 500f,
+                StatType.Duration => 500f,
+                _ => -1f,
+            };
         }
     }
 }

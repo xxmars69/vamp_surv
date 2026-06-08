@@ -1,9 +1,10 @@
 using UnityEngine;
 using System.Collections;
+using CelikenVP;
 
 public class PlayerController : MonoBehaviour
 {
-    public float speed = 5f;
+    [SerializeField] private float baseMoveSpeed = 5f;
     private Rigidbody2D rb;
     private Vector2 moveInput;
     private Animator anim;
@@ -18,10 +19,13 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
+        maxHealth = Mathf.Max(maxHealth, 6);
         currentHealth = maxHealth;
         
         // Cautam UI-ul si il actualizam instant
-        healthUI = Object.FindFirstObjectByType<HealthUI>();
+        healthUI = Object.FindAnyObjectByType<HealthUI>();
+        if (healthUI == null)
+            healthUI = RuntimeVisualRepair.EnsureHealthUI();
         if (healthUI != null) healthUI.UpdateHearts(currentHealth);
     }
 
@@ -44,13 +48,16 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         if (currentHealth <= 0) return;
-        rb.MovePosition(rb.position + moveInput.normalized * speed * Time.fixedDeltaTime);
+        float statSpeed = baseMoveSpeed * PlayerStatsRuntime.GetMultiplier(StatType.MoveSpeed);
+        rb.MovePosition(rb.position + moveInput.normalized * statSpeed * Time.fixedDeltaTime);
     }
 
     public void TakeDamage(int damage)
     {
         if (currentHealth <= 0) return;
-        currentHealth -= damage;
+        int armor = PlayerStatsRuntime.GetIntStat(StatType.Armor, 0);
+        int finalDamage = Mathf.Max(1, damage - armor);
+        currentHealth -= finalDamage;
         StartCoroutine(FlashRed());
         
         if (healthUI != null) healthUI.UpdateHearts(currentHealth);

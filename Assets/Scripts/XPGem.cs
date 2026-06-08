@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class XPGem : MonoBehaviour
 {
+    public int xpValue = 10;
     public float moveSpeed = 5f;
     private Transform player;
     private bool isFollowing = false;
@@ -25,7 +26,7 @@ public class XPGem : MonoBehaviour
             }
             else if (Vector2.Distance(transform.position, player.position) < 0.5f)
             {
-                GameManager.Instance.AddXP();
+                GameManager.Instance.AddXP(xpValue);
                 Destroy(gameObject);
             }
         }
