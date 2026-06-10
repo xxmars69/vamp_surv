@@ -114,6 +114,9 @@ public static class RuntimeVisualRepair
             infiniteBackground.player = player.transform;
     }
 
+    public static Sprite LoadSpriteRuntime(string relativePath, float pixelsPerUnit)
+        => LoadSpriteFromAssets(relativePath, pixelsPerUnit);
+
     private static Sprite LoadSpriteFromAssets(string relativePath, float pixelsPerUnit)
     {
         string path = Path.Combine(Application.dataPath, relativePath);

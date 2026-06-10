@@ -12,18 +12,17 @@ public class AutoAttack : MonoBehaviour
 
     void Start()
     {
-        anim = GetComponent<Animator>();
+        anim   = GetComponent<Animator>();
         player = GetComponent<PlayerController>();
     }
 
     void Update()
     {
-        // Nu mai trage daca jucatorul e mort sau nu exista
         if (player == null || player.currentHealth <= 0) return;
 
         float cooldownPercent = PlayerStatsRuntime.GetPercentStat(StatType.Cooldown, 0f);
-        float fireInterval = baseFireInterval * Mathf.Clamp01(1f - cooldownPercent / 100f);
-        fireInterval = Mathf.Max(0.08f, fireInterval);
+        float fireInterval    = baseFireInterval * Mathf.Clamp01(1f - cooldownPercent / 100f);
+        fireInterval          = Mathf.Max(0.08f, fireInterval);
 
         if (Time.time >= nextFireTime)
         {
@@ -34,25 +33,37 @@ public class AutoAttack : MonoBehaviour
 
     bool TryShoot()
     {
-        if (anim != null) anim.SetTrigger("shoot");
+        Vector3 direction;
 
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0f;
-        Vector3 direction = (mousePos - transform.position).normalized;
-        if (direction.sqrMagnitude <= 0.001f)
-            direction = transform.right;
+        if (player != null && player.IsMatilda)
+        {
+            // Matilda ataca doar in directia in care priveste/se misca
+            direction = player.FacingDirection;
+        }
+        else
+        {
+            // Hero ataca spre pozitia mouse-ului
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mousePos.z = 0f;
+            direction  = (mousePos - transform.position).normalized;
+            if (direction.sqrMagnitude <= 0.001f)
+                direction = transform.right;
+        }
 
-        int amount = Mathf.Max(1, PlayerStatsRuntime.GetIntStat(StatType.Amount, 1));
+        if (anim != null && anim.enabled)
+            anim.SetTrigger("shoot");
+
+        int   amount    = Mathf.Max(1, PlayerStatsRuntime.GetIntStat(StatType.Amount, 1));
         float areaScale = Mathf.Max(0.1f, PlayerStatsRuntime.GetMultiplier(StatType.Area));
 
         for (int i = 0; i < amount; i++)
         {
-            float offset = amount == 1 ? 0f : (i - (amount - 1) * 0.5f) * spreadAngle;
-            Vector3 shotDirection = Quaternion.Euler(0f, 0f, offset) * direction;
-            GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
+            float  offset       = amount == 1 ? 0f : (i - (amount - 1) * 0.5f) * spreadAngle;
+            Vector3 shotDir     = Quaternion.Euler(0f, 0f, offset) * direction;
+            GameObject bullet   = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
             Bullet bulletScript = bullet.GetComponent<Bullet>();
             if (bulletScript != null)
-                bulletScript.SetDirection(shotDirection, areaScale);
+                bulletScript.SetDirection(shotDir, areaScale);
         }
 
         return true;

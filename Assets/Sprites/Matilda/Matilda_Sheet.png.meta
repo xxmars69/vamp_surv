@@ -1,0 +1,845 @@
+fileFormatVersion: 2
+guid: 99e7149100b952b4f9d674cfd8176ac0
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8406276798530044519
+    second: Matilda_Sheet_0
+  - first:
+      213: 3152971738594632237
+    second: Matilda_Sheet_1
+  - first:
+      213: 5062523348375463315
+    second: Matilda_Sheet_2
+  - first:
+      213: 6464306528200010263
+    second: Matilda_Sheet_3
+  - first:
+      213: -5027432925624362151
+    second: Matilda_Sheet_4
+  - first:
+      213: 1090410008195800810
+    second: Matilda_Sheet_5
+  - first:
+      213: 4439303891559835698
+    second: Matilda_Sheet_6
+  - first:
+      213: -4169370786030867411
+    second: Matilda_Sheet_7
+  - first:
+      213: 4246441913876200527
+    second: Matilda_Sheet_8
+  - first:
+      213: 8911899779958913305
+    second: Matilda_Sheet_9
+  - first:
+      213: 5194685336739036670
+    second: Matilda_Sheet_10
+  - first:
+      213: -640328284289389695
+    second: Matilda_Sheet_11
+  - first:
+      213: -5983867086228837619
+    second: Matilda_Sheet_12
+  - first:
+      213: -7330077750200549369
+    second: Matilda_Sheet_13
+  - first:
+      213: 7391525242727685231
+    second: Matilda_Sheet_14
+  - first:
+      213: -6213914815997808813
+    second: Matilda_Sheet_15
+  - first:
+      213: -3838956520357446447
+    second: Matilda_Sheet_16
+  - first:
+      213: 8036263835740745461
+    second: Matilda_Sheet_17
+  - first:
+      213: 1513112984371789245
+    second: Matilda_Sheet_18
+  - first:
+      213: -5478070467327555139
+    second: Matilda_Sheet_19
+  - first:
+      213: 6776900087469029658
+    second: Matilda_Sheet_20
+  - first:
+      213: -1533527727435079357
+    second: Matilda_Sheet_21
+  - first:
+      213: -6650044104666607375
+    second: Matilda_Sheet_22
+  - first:
+      213: 6125518759585699409
+    second: Matilda_Sheet_23
+  - first:
+      213: -4494801429079094667
+    second: Matilda_Sheet_24
+  - first:
+      213: -981632866489854654
+    second: Matilda_Sheet_25
+  - first:
+      213: -287668454235562998
+    second: Matilda_Sheet_26
+  - first:
+      213: -4994309554873974776
+    second: Matilda_Sheet_27
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Matilda_Sheet_0
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 191
+        width: 22
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 762cdfbb53819a470800000000000000
+      internalID: 8406276798530044519
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_1
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 191
+        width: 23
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2267c1571b91cb20800000000000000
+      internalID: 3152971738594632237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_2
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 191
+        width: 22
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3956a07b922b14640800000000000000
+      internalID: 5062523348375463315
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_3
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 191
+        width: 22
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 71aa99cb984d5b950800000000000000
+      internalID: 6464306528200010263
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_4
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 127
+        width: 20
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95b9e000468fa3ab0800000000000000
+      internalID: -5027432925624362151
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_5
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 127
+        width: 24
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aee9a0e002ae12f00800000000000000
+      internalID: 1090410008195800810
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_6
+      rect:
+        serializedVersion: 2
+        x: 146
+        y: 127
+        width: 20
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 238ee627e539b9d30800000000000000
+      internalID: 4439303891559835698
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_7
+      rect:
+        serializedVersion: 2
+        x: 209
+        y: 127
+        width: 21
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2c2db14c5b6326c0800000000000000
+      internalID: -4169370786030867411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_8
+      rect:
+        serializedVersion: 2
+        x: 274
+        y: 127
+        width: 19
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4cbbeb0c646eea30800000000000000
+      internalID: 4246441913876200527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_9
+      rect:
+        serializedVersion: 2
+        x: 334
+        y: 127
+        width: 23
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9193552f1ad6dab70800000000000000
+      internalID: 8911899779958913305
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_10
+      rect:
+        serializedVersion: 2
+        x: 399
+        y: 127
+        width: 19
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: efdb2488aca371840800000000000000
+      internalID: 5194685336739036670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_11
+      rect:
+        serializedVersion: 2
+        x: 462
+        y: 127
+        width: 20
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 18bab4b61d81d17f0800000000000000
+      internalID: -640328284289389695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_12
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 127
+        width: 20
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0bad26c69805fca0800000000000000
+      internalID: -5983867086228837619
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_13
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 63
+        width: 22
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7004d436f15564a90800000000000000
+      internalID: -7330077750200549369
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_14
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 63
+        width: 21
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6cdd19db09f39660800000000000000
+      internalID: 7391525242727685231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_15
+      rect:
+        serializedVersion: 2
+        x: 147
+        y: 63
+        width: 21
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35fe9e7c56db3c9a0800000000000000
+      internalID: -6213914815997808813
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_16
+      rect:
+        serializedVersion: 2
+        x: 208
+        y: 62
+        width: 21
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1dcbce7626949bac0800000000000000
+      internalID: -3838956520357446447
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_17
+      rect:
+        serializedVersion: 2
+        x: 272
+        y: 61
+        width: 22
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fe25a2716b868f60800000000000000
+      internalID: 8036263835740745461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_18
+      rect:
+        serializedVersion: 2
+        x: 334
+        y: 62
+        width: 21
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dbdf2821e38aff410800000000000000
+      internalID: 1513112984371789245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_19
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 0
+        width: 44
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db9026c1febf9f3b0800000000000000
+      internalID: -5478070467327555139
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_20
+      rect:
+        serializedVersion: 2
+        x: 87
+        y: 0
+        width: 33
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a19b7e759b26c0e50800000000000000
+      internalID: 6776900087469029658
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_21
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 0
+        width: 36
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 341250928a0d7bae0800000000000000
+      internalID: -1533527727435079357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_22
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 0
+        width: 39
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f09aa8ce1c46b3a0800000000000000
+      internalID: -6650044104666607375
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_23
+      rect:
+        serializedVersion: 2
+        x: 258
+        y: 0
+        width: 47
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 156d8128bd6320550800000000000000
+      internalID: 6125518759585699409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_24
+      rect:
+        serializedVersion: 2
+        x: 299
+        y: 17
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 57a82db2ae14f91c0800000000000000
+      internalID: -4494801429079094667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_25
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 0
+        width: 42
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 245160ddb1a8062f0800000000000000
+      internalID: -981632866489854654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_26
+      rect:
+        serializedVersion: 2
+        x: 387
+        y: 0
+        width: 32
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0c1434a01ff10cf0800000000000000
+      internalID: -287668454235562998
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Matilda_Sheet_27
+      rect:
+        serializedVersion: 2
+        x: 453
+        y: 0
+        width: 34
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 800c56bbbe5a0bab0800000000000000
+      internalID: -4994309554873974776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Matilda_Sheet_0: 8406276798530044519
+      Matilda_Sheet_1: 3152971738594632237
+      Matilda_Sheet_10: 5194685336739036670
+      Matilda_Sheet_11: -640328284289389695
+      Matilda_Sheet_12: -5983867086228837619
+      Matilda_Sheet_13: -7330077750200549369
+      Matilda_Sheet_14: 7391525242727685231
+      Matilda_Sheet_15: -6213914815997808813
+      Matilda_Sheet_16: -3838956520357446447
+      Matilda_Sheet_17: 8036263835740745461
+      Matilda_Sheet_18: 1513112984371789245
+      Matilda_Sheet_19: -5478070467327555139
+      Matilda_Sheet_2: 5062523348375463315
+      Matilda_Sheet_20: 6776900087469029658
+      Matilda_Sheet_21: -1533527727435079357
+      Matilda_Sheet_22: -6650044104666607375
+      Matilda_Sheet_23: 6125518759585699409
+      Matilda_Sheet_24: -4494801429079094667
+      Matilda_Sheet_25: -981632866489854654
+      Matilda_Sheet_26: -287668454235562998
+      Matilda_Sheet_27: -4994309554873974776
+      Matilda_Sheet_3: 6464306528200010263
+      Matilda_Sheet_4: -5027432925624362151
+      Matilda_Sheet_5: 1090410008195800810
+      Matilda_Sheet_6: 4439303891559835698
+      Matilda_Sheet_7: -4169370786030867411
+      Matilda_Sheet_8: 4246441913876200527
+      Matilda_Sheet_9: 8911899779958913305
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

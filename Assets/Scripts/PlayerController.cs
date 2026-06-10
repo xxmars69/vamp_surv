@@ -14,6 +14,11 @@ public class PlayerController : MonoBehaviour
     public int currentHealth;
     private HealthUI healthUI;
 
+    // Directia in care se uita personajul (folosita de Matilda pentru atac)
+    public Vector2 FacingDirection { get; private set; } = Vector2.right;
+
+    public bool IsMatilda { get; private set; }
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -21,12 +26,28 @@ public class PlayerController : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
         maxHealth = Mathf.Max(maxHealth, 6);
         currentHealth = maxHealth;
-        
-        // Cautam UI-ul si il actualizam instant
+
         healthUI = Object.FindAnyObjectByType<HealthUI>();
         if (healthUI == null)
             healthUI = RuntimeVisualRepair.EnsureHealthUI();
         if (healthUI != null) healthUI.UpdateHearts(currentHealth);
+
+        ApplyCharacterSelection();
+    }
+
+    void ApplyCharacterSelection()
+    {
+        IsMatilda = CharacterSelectionData.Selected == CharacterSelectionData.CharacterType.Matilda;
+
+        if (!IsMatilda) return;
+
+        // Dezactivam animator-ul Hero pentru Matilda (nu are acelasi controller)
+        if (anim != null) anim.enabled = false;
+
+        // Incarcam sprite-ul Matildei
+        Sprite matildaSprite = RuntimeVisualRepair.LoadSpriteRuntime("Sprites/Matilda/Matilda_Sheet.png", 1f);
+        if (matildaSprite != null && sr != null)
+            sr.sprite = matildaSprite;
     }
 
     void Update()
@@ -38,11 +59,22 @@ public class PlayerController : MonoBehaviour
 
         if (anim != null) anim.SetBool("isMoving", moveInput.magnitude > 0);
 
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        if (mousePos.x < transform.position.x)
-            sr.flipX = true;
+        if (IsMatilda)
+        {
+            // Matilda: se uita in directia de miscare
+            if (moveInput.sqrMagnitude > 0.01f)
+            {
+                FacingDirection = moveInput.normalized;
+                if (sr != null) sr.flipX = moveInput.x < 0f;
+            }
+        }
         else
-            sr.flipX = false;
+        {
+            // Hero: se uita spre mouse
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            sr.flipX = mousePos.x < transform.position.x;
+            FacingDirection = sr.flipX ? Vector2.left : Vector2.right;
+        }
     }
 
     void FixedUpdate()
@@ -59,9 +91,9 @@ public class PlayerController : MonoBehaviour
         int finalDamage = Mathf.Max(1, damage - armor);
         currentHealth -= finalDamage;
         StartCoroutine(FlashRed());
-        
+
         if (healthUI != null) healthUI.UpdateHearts(currentHealth);
-        
+
         if (anim != null) { try { anim.SetTrigger("damage"); } catch {} }
 
         if (currentHealth <= 0) Die();
@@ -79,6 +111,5 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Jucatorul a murit!");
         if (anim != null) { try { anim.SetTrigger("dead"); } catch {} }
         rb.linearVelocity = Vector2.zero;
-        // Ecranul de Game Over este activat automat de HealthUI
     }
 }
