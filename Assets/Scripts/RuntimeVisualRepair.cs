@@ -78,10 +78,14 @@ public static class RuntimeVisualRepair
 
     private static void RestoreBackgroundIfMissing()
     {
+        // Daca exista noul sistem de teren (MapController), nu recreem fundalul vechi
+        if (Object.FindAnyObjectByType<MapController>() != null)
+            return;
+
         if (GameObject.Find("InfiniteBackground") != null)
             return;
 
-        Sprite grassSprite = LoadSpriteFromAssets("Sprites/Grass_Custom_Final.png", 100f);
+        Sprite grassSprite = LoadSpriteFromAssets("Sprites/Grass_Custom_Final.png", 40f);
         if (grassSprite == null)
             grassSprite = LoadSpriteFromAssets("Sprites/Grass_Seamless.png", 32f);
         if (grassSprite == null)

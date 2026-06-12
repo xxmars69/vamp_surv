@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     public Text goldText;
     private GameObject currentShield;
     private GameObject runtimeUpgradeMenu;
+    private GameObject runtimeStatsPanel;
 
     private int currentXP = 0;
     private int level = 1;
@@ -34,6 +35,12 @@ public class GameManager : MonoBehaviour
         RuntimeVisualRepair.Repair();
         if (itemPicker != null)
             itemPicker.gameObject.SetActive(false);
+
+        // HUD compact stanga-sus: LV/XP pe randul 1, inimile pe randul 2 (in HealthUI), Gold pe randul 3
+        // Stanga-sus: LV/XP (rand 1) -> inimi (rand 2, in HealthUI la y=-30) -> Gold (rand 3)
+        HealthUI.PositionTopLeft(xpText,   new Vector2(12f, -8f),  14);
+        HealthUI.PositionTopLeft(goldText, new Vector2(12f, -52f), 14);
+
         UpdateResourceUI();
     }
 
@@ -106,6 +113,7 @@ public class GameManager : MonoBehaviour
         if (upgradeUI != null) upgradeUI.SetActive(false);
         if (itemPicker != null) itemPicker.gameObject.SetActive(false);
         if (runtimeUpgradeMenu != null) Destroy(runtimeUpgradeMenu);
+        if (runtimeStatsPanel != null) Destroy(runtimeStatsPanel);
         Time.timeScale = 1f;
     }
 
@@ -163,8 +171,9 @@ public class GameManager : MonoBehaviour
         runtimeUpgradeMenu.transform.SetParent(canvas.transform, false);
 
         RectTransform panelRect = runtimeUpgradeMenu.GetComponent<RectTransform>();
-        panelRect.anchorMin = new Vector2(0.28f, 0.25f);
-        panelRect.anchorMax = new Vector2(0.72f, 0.75f);
+        // Fereastra de ~3x mai inalta (doar pe verticala), latimea ramane la fel
+        panelRect.anchorMin = new Vector2(0.35f, 0.05f);
+        panelRect.anchorMax = new Vector2(0.65f, 0.95f);
         panelRect.offsetMin = Vector2.zero;
         panelRect.offsetMax = Vector2.zero;
 
@@ -172,26 +181,53 @@ public class GameManager : MonoBehaviour
         panelImage.color = new Color(0f, 0f, 0f, 0.82f);
 
         VerticalLayoutGroup layout = runtimeUpgradeMenu.AddComponent<VerticalLayoutGroup>();
-        layout.padding = new RectOffset(25, 25, 25, 25);
-        layout.spacing = 12f;
+        layout.padding = new RectOffset(12, 12, 10, 10);
+        layout.spacing = 6f;
         layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = true;
 
-        CreateMenuText(runtimeUpgradeMenu.transform, "Level Up! Alege un upgrade", 28);
+        CreateMenuText(runtimeUpgradeMenu.transform, "Level Up! Alege un upgrade", 18);
+
+        // Shuffle ca fiecare level-up sa arate iteme diferite (ca in Vampire Survivors)
+        var pool = new List<ObjectSO>(availableItems);
+        for (int i = pool.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (pool[i], pool[j]) = (pool[j], pool[i]);
+        }
+
+        // Revolver (proiectil extra) doar pentru personajele care trag proiectile (Hero, Countess)
+        var sel = CharacterSelectionData.Selected;
+        bool isShooter = sel == CharacterSelectionData.CharacterType.Hero
+                      || sel == CharacterSelectionData.CharacterType.Countess_Vampire;
 
         int buttonsCreated = 0;
-        foreach (ObjectSO item in availableItems)
+        foreach (ObjectSO item in pool)
         {
-            if (item == null || Player.Instance == null || !Player.Instance.CanPickItem(item))
+            if (item == null || Player.Instance == null)
                 continue;
 
-            ObjectSO selectedItem = item;
-            CreateMenuButton(runtimeUpgradeMenu.transform, item.objectName, () =>
+            if (item.objectName == "Revolver" && !isShooter)
+                continue;
+
+            // Itemul si-a atins nivelul maxim (stack 5) -> in locul lui apare +25 gold
+            bool maxed = Player.Instance.GetCurrentItemLevel(item) >= item.objectMaxLevel;
+            if (maxed)
             {
-                Player.Instance.PickItem(selectedItem);
-                ResumeGame();
-            });
-            buttonsCreated++;
+                CreateGoldRewardButton(runtimeUpgradeMenu.transform, 25);
+                buttonsCreated++;
+            }
+            else if (Player.Instance.CanPickItem(item))
+            {
+                ObjectSO selectedItem = item;
+                CreateItemButton(runtimeUpgradeMenu.transform, selectedItem, () =>
+                {
+                    Player.Instance.PickItem(selectedItem);
+                    ApplyItemSpecialEffects(selectedItem);
+                    ResumeGame();
+                });
+                buttonsCreated++;
+            }
 
             if (buttonsCreated >= 3)
                 break;
@@ -202,6 +238,243 @@ public class GameManager : MonoBehaviour
             CreateMenuButton(runtimeUpgradeMenu.transform, "Trage mai repede", ApplyUpgrade_FireRate);
             CreateMenuButton(runtimeUpgradeMenu.transform, "Scut orbital", ApplyUpgrade_Shield);
         }
+
+        CreateStatsSidePanel(canvas);
+    }
+
+    // Buton de recompensa: +N gold, cu imaginea saculetului (inlocuieste un item maxat)
+    void CreateGoldRewardButton(Transform parent, int amount)
+    {
+        GameObject buttonObject = new GameObject("Gold Reward Button", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+        buttonObject.transform.SetParent(parent, false);
+
+        buttonObject.GetComponent<Image>().color = new Color(0.30f, 0.26f, 0.10f, 1f);
+        buttonObject.GetComponent<Button>().onClick.AddListener(() =>
+        {
+            AddGold(amount);
+            ResumeGame();
+        });
+
+        Sprite bag = RuntimeVisualRepair.LoadSpriteRuntime("CurrencyGems/MoneyBag/MoneyBag.png", 32f);
+        if (bag != null)
+        {
+            GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            iconObject.transform.SetParent(buttonObject.transform, false);
+
+            RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+            iconRect.anchorMin = new Vector2(0f, 0.5f);
+            iconRect.anchorMax = new Vector2(0f, 0.5f);
+            iconRect.pivot     = new Vector2(0f, 0.5f);
+            iconRect.anchoredPosition = new Vector2(10f, 0f);
+            iconRect.sizeDelta = new Vector2(26f, 26f);
+
+            Image iconImage = iconObject.GetComponent<Image>();
+            iconImage.sprite = bag;
+            iconImage.preserveAspect = true;
+        }
+
+        GameObject textObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+        textObject.transform.SetParent(buttonObject.transform, false);
+
+        RectTransform textRect = textObject.GetComponent<RectTransform>();
+        textRect.anchorMin = new Vector2(0f, 0f);
+        textRect.anchorMax = new Vector2(1f, 1f);
+        textRect.offsetMin = new Vector2(44f, 2f);
+        textRect.offsetMax = new Vector2(-8f, -2f);
+
+        Text label = textObject.GetComponent<Text>();
+        label.text      = "+" + amount + " gold";
+        label.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        label.fontSize  = 16;
+        label.fontStyle = FontStyle.Bold;
+        label.color     = new Color(1f, 0.92f, 0.5f, 1f);
+        label.alignment = TextAnchor.MiddleLeft;
+        label.horizontalOverflow = HorizontalWrapMode.Overflow;
+    }
+
+    // Buton de upgrade cu iconita itemului + nume + efect (ex. "Beer  +1hp").
+    // Pozitionare manuala (fara layout group) ca textul sa fie mereu vizibil.
+    void CreateItemButton(Transform parent, ObjectSO item, UnityEngine.Events.UnityAction action)
+    {
+        GameObject buttonObject = new GameObject(item.objectName + " Button", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+        buttonObject.transform.SetParent(parent, false);
+
+        buttonObject.GetComponent<Image>().color = new Color(0.18f, 0.28f, 0.36f, 1f);
+        buttonObject.GetComponent<Button>().onClick.AddListener(action);
+
+        // Iconita - ancorata in stanga butonului
+        Sprite icon = RuntimeVisualRepair.LoadSpriteRuntime(IconPath(item), 32f);
+        if (icon == null) icon = item.objectIcon;
+        if (icon != null)
+        {
+            GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            iconObject.transform.SetParent(buttonObject.transform, false);
+
+            RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+            iconRect.anchorMin = new Vector2(0f, 0.5f);
+            iconRect.anchorMax = new Vector2(0f, 0.5f);
+            iconRect.pivot     = new Vector2(0f, 0.5f);
+            iconRect.anchoredPosition = new Vector2(10f, 0f);
+            iconRect.sizeDelta = new Vector2(26f, 26f);
+
+            Image iconImage = iconObject.GetComponent<Image>();
+            iconImage.sprite = icon;
+            iconImage.preserveAspect = true;
+        }
+
+        // Eticheta "Nume   efect" - umple restul butonului, aliniata la stanga
+        GameObject textObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+        textObject.transform.SetParent(buttonObject.transform, false);
+
+        RectTransform textRect = textObject.GetComponent<RectTransform>();
+        textRect.anchorMin = new Vector2(0f, 0f);
+        textRect.anchorMax = new Vector2(1f, 1f);
+        textRect.offsetMin = new Vector2(44f, 2f);
+        textRect.offsetMax = new Vector2(-8f, -2f);
+
+        Text label = textObject.GetComponent<Text>();
+        label.text      = item.objectName + "   " + item.objectDescription;
+        label.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        label.fontSize  = 15;
+        label.color     = Color.white;
+        label.alignment = TextAnchor.MiddleLeft;
+        label.horizontalOverflow = HorizontalWrapMode.Overflow;
+        label.verticalOverflow   = VerticalWrapMode.Overflow;
+    }
+
+    // Calea iconitei pentru fiecare item (numele fisierului difera de objectName la cateva)
+    string IconPath(ObjectSO item)
+    {
+        switch (item.objectName)
+        {
+            case "Luck":          return "Sprites/Items/Dice-1.png";
+            case "Book of Faith": return "Sprites/Items/Bible-1.png";
+            case "Dagger":        return "Sprites/Items/Dagger-1.png";
+            case "Heart":         return "Sprites/Items/Heart-1.png";
+            case "Revolver":      return "Sprites/Items/Revolver-1.png";
+            default:              return "Sprites/Items/" + item.objectName + "-1.png";
+        }
+    }
+
+    // Efecte care nu trec prin sistemul de stats
+    // (Beer = inima noua, Shield = scut pe kill-uri, Book of Faith = carte rotativa)
+    void ApplyItemSpecialEffects(ObjectSO item)
+    {
+        if (item == null) return;
+
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject == null) return;
+
+        if (item.objectName == "Beer")
+        {
+            PlayerController controller = playerObject.GetComponent<PlayerController>();
+            if (controller != null) controller.AddHeart();
+        }
+        else if (item.objectName == "Shield")
+        {
+            ShieldSystem shield = playerObject.GetComponent<ShieldSystem>();
+            if (shield == null) shield = playerObject.AddComponent<ShieldSystem>();
+
+            int level = Player.Instance != null ? Player.Instance.GetCurrentItemLevel(item) : 1;
+            shield.SetItemLevel(Mathf.Max(1, level));
+        }
+        else if (item.objectName == "Book of Faith")
+        {
+            OrbitingBooks books = playerObject.GetComponent<OrbitingBooks>();
+            if (books == null) books = playerObject.AddComponent<OrbitingBooks>();
+            books.AddBook(item.objectMaxLevel);
+        }
+        else if (item.objectName == "Heart")
+        {
+            // Reduce intervalul de regen cu 1s si creste cantitatea cu 0.5 inima (1 HP intern)
+            PlayerController controller = playerObject.GetComponent<PlayerController>();
+            if (controller != null) controller.BoostRecovery(1f, 1);
+        }
+    }
+
+    // Bara verticala de stats, lipita de marginea stanga a ecranului, vizibila la level-up
+    void CreateStatsSidePanel(Canvas canvas)
+    {
+        if (runtimeStatsPanel != null)
+            Destroy(runtimeStatsPanel);
+
+        runtimeStatsPanel = new GameObject("RuntimeStatsPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        runtimeStatsPanel.transform.SetParent(canvas.transform, false);
+
+        RectTransform rect = runtimeStatsPanel.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 0.22f);
+        rect.anchorMax = new Vector2(0.18f, 0.78f);
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        runtimeStatsPanel.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.85f);
+
+        VerticalLayoutGroup layout = runtimeStatsPanel.AddComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(8, 8, 8, 8);
+        layout.spacing = 3f;
+        layout.childAlignment = TextAnchor.UpperLeft;
+        layout.childForceExpandWidth  = true;
+        layout.childForceExpandHeight = false;
+
+        // Valorile curente: pornesc din profilul personajului + bonusurile din iteme
+        CharacterProfile.Profile profile = CharacterProfile.Current;
+
+        int hearts = profile.hearts;
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject != null)
+        {
+            PlayerController controller = playerObject.GetComponent<PlayerController>();
+            if (controller != null) hearts = controller.maxHealth / 2;
+        }
+
+        // Viteza: profilul (5% Hero, 7% Matilda) + bonusurile din MoveSpeed (Feather +10%)
+        float moveSpeedPercent = PlayerStatsRuntime.GetPercentStat(StatType.MoveSpeed, 100f);
+        int displaySpeed = profile.speedPercent + Mathf.RoundToInt(moveSpeedPercent - 100f);
+
+        int shieldKills = profile.shieldKills;
+        if (ShieldSystem.Instance != null && ShieldSystem.Instance.HasItem)
+            shieldKills = ShieldSystem.Instance.KillsRequired;
+
+        // Luck: din profil + bonusuri; Damage: din profil scalat cu Might
+        int displayLuck   = profile.luckPercent + Mathf.RoundToInt(PlayerStatsRuntime.GetPercentStat(StatType.Luck, 100f) - 100f);
+        int displayDamage = Mathf.RoundToInt(profile.damage * PlayerStatsRuntime.GetMultiplier(StatType.Might));
+
+        // Recovery live din PlayerController (reflecta upgrade-urile Heart)
+        float recAmount   = profile.recoveryAmount;
+        float recInterval = profile.recoveryInterval;
+        if (playerObject != null)
+        {
+            PlayerController pcr = playerObject.GetComponent<PlayerController>();
+            if (pcr != null) { recAmount = pcr.RecoveryAmount; recInterval = pcr.RecoveryInterval; }
+        }
+        float recoveryHearts = recAmount * 0.5f;
+        string recoveryLine  = "- recovery " + recoveryHearts.ToString("0.#") + " / " + recInterval.ToString("0") + "s";
+
+        CreateStatText(runtimeStatsPanel.transform, "STATS:", 13);
+        CreateStatText(runtimeStatsPanel.transform, "- health " + hearts + "hp", 11);
+        CreateStatText(runtimeStatsPanel.transform, "- speed " + displaySpeed + "%", 11);
+        CreateStatText(runtimeStatsPanel.transform, "- shield " + shieldKills + " kills", 11);
+        CreateStatText(runtimeStatsPanel.transform, "- luck " + displayLuck + "%", 11);
+        CreateStatText(runtimeStatsPanel.transform, "- damage " + displayDamage, 11);
+        CreateStatText(runtimeStatsPanel.transform, recoveryLine, 11);
+    }
+
+    void CreateStatText(Transform parent, string text, int fontSize)
+    {
+        GameObject textObject = new GameObject("Stat", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+        textObject.transform.SetParent(parent, false);
+
+        Text label = textObject.GetComponent<Text>();
+        label.text      = text;
+        label.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        label.fontSize  = fontSize;
+        label.fontStyle = FontStyle.Bold;
+        label.color     = Color.white;
+        label.alignment = TextAnchor.MiddleLeft;
+        label.horizontalOverflow = HorizontalWrapMode.Overflow;
+
+        LayoutElement layoutElement = textObject.AddComponent<LayoutElement>();
+        layoutElement.minHeight = fontSize + 8f;
     }
 
     void CreateMenuText(Transform parent, string text, int fontSize)

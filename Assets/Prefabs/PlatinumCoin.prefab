@@ -142,6 +142,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CollectiblePickup
   kind: 1
-  value: 10
+  value: 30
   moveSpeed: 8
   pickupDistance: 0.35

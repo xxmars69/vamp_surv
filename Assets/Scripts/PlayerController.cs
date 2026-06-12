@@ -18,36 +18,94 @@ public class PlayerController : MonoBehaviour
     public Vector2 FacingDirection { get; private set; } = Vector2.right;
 
     public bool IsMatilda { get; private set; }
+    // True pentru personajele care folosesc VampireAnimator (Countess, Dracula, VampireGirl)
+    public bool IsVampire { get; private set; }
+    private VampireAnimator vampAnim;
+
+    // True cand jucatorul are input de miscare (folosit de MatildaAnimator)
+    public bool IsMoving { get; private set; }
+
+    // Directia de input (echivalentul lui PlayerMovement.moveDir din tutorial),
+    // folosita de MapController pentru generarea de chunk-uri de teren
+    public Vector2 moveDir => moveInput;
+
+    // Recovery: valori venite din profilul personajului
+    private float recoveryInterval = 15f;
+    private int   recoveryAmount   = 1;
+    private float recoveryTimer;
+
+    // Damage multiplier specific personajului (Hero 1.2x, Matilda 0.8x)
+    public float CharacterDamageMultiplier { get; private set; } = 1f;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
-        maxHealth = Mathf.Max(maxHealth, 6);
-        currentHealth = maxHealth;
+
+        // Blocheaza rotatia jucatorului la coliziuni (ex. cu miniboss)
+        if (rb != null)
+        {
+            rb.freezeRotation = true;
+            rb.constraints    = RigidbodyConstraints2D.FreezeRotation;
+        }
+
+        // Aplicam profilul personajului ales (HP, recovery, damage, viteza)
+        CharacterProfile.Profile profile = CharacterProfile.Current;
+        maxHealth                 = profile.hearts * 2;
+        currentHealth             = maxHealth;
+        recoveryInterval          = profile.recoveryInterval;
+        recoveryAmount            = Mathf.RoundToInt(profile.recoveryAmount);
+        CharacterDamageMultiplier = profile.damage / 10f;
+        baseMoveSpeed             = 5f * (profile.speedPercent / 5f);
 
         healthUI = Object.FindAnyObjectByType<HealthUI>();
         if (healthUI == null)
             healthUI = RuntimeVisualRepair.EnsureHealthUI();
-        if (healthUI != null) healthUI.UpdateHearts(currentHealth);
+        if (healthUI != null)
+        {
+            healthUI.EnsureHeartCount(profile.hearts);
+            healthUI.UpdateHearts(currentHealth);
+        }
 
         ApplyCharacterSelection();
     }
 
     void ApplyCharacterSelection()
     {
-        IsMatilda = CharacterSelectionData.Selected == CharacterSelectionData.CharacterType.Matilda;
+        var selected = CharacterSelectionData.Selected;
+        IsMatilda = selected == CharacterSelectionData.CharacterType.Matilda;
 
-        if (!IsMatilda) return;
+        // Maparea personaj -> folder + fisier de atac (Vampire_Girl foloseste Attack_4)
+        string vampireFolder = null;
+        string attackFile = "Attack_1.png";
+        switch (selected)
+        {
+            case CharacterSelectionData.CharacterType.Countess_Vampire:
+                // Attack_1 arata personajul atacand; Blood_Charge e doar efectul/proiectilul
+                // care e spawned separat ca glonte de catre AutoAttack
+                vampireFolder = "Countess_Vampire"; attackFile = "Attack_1.png"; break;
+            case CharacterSelectionData.CharacterType.Dracula:
+                vampireFolder = "Dracula"; attackFile = "Attack_1.png"; break;
+            case CharacterSelectionData.CharacterType.Vampire_Girl:
+                vampireFolder = "Vampire_Girl"; attackFile = "Attack_4.png"; break;
+        }
+        IsVampire = vampireFolder != null;
 
-        // Dezactivam animator-ul Hero pentru Matilda (nu are acelasi controller)
-        if (anim != null) anim.enabled = false;
-
-        // Incarcam sprite-ul Matildei
-        Sprite matildaSprite = RuntimeVisualRepair.LoadSpriteRuntime("Sprites/Matilda/Matilda_Sheet.png", 1f);
-        if (matildaSprite != null && sr != null)
-            sr.sprite = matildaSprite;
+        if (IsMatilda)
+        {
+            if (anim != null) anim.enabled = false;
+            if (GetComponent<MatildaAnimator>() == null)
+                gameObject.AddComponent<MatildaAnimator>();
+        }
+        else if (IsVampire)
+        {
+            if (anim != null) anim.enabled = false;
+            vampAnim = GetComponent<VampireAnimator>();
+            if (vampAnim == null) vampAnim = gameObject.AddComponent<VampireAnimator>();
+            vampAnim.characterFolder = vampireFolder;
+            vampAnim.attackFile = attackFile;
+        }
     }
 
     void Update()
@@ -57,11 +115,15 @@ public class PlayerController : MonoBehaviour
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.y = Input.GetAxisRaw("Vertical");
 
-        if (anim != null) anim.SetBool("isMoving", moveInput.magnitude > 0);
+        IsMoving = moveInput.magnitude > 0;
 
-        if (IsMatilda)
+        if (anim != null && anim.enabled) anim.SetBool("isMoving", IsMoving);
+
+        TickRecovery();
+
+        if (IsMatilda || IsVampire)
         {
-            // Matilda: se uita in directia de miscare
+            // Matilda + vampirele: se uita in directia de miscare
             if (moveInput.sqrMagnitude > 0.01f)
             {
                 FacingDirection = moveInput.normalized;
@@ -87,6 +149,11 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(int damage)
     {
         if (currentHealth <= 0) return;
+
+        // Scutul (itemul Shield) anuleaza complet lovitura daca e activ
+        ShieldSystem shield = GetComponent<ShieldSystem>();
+        if (shield != null && shield.TryAbsorbHit()) return;
+
         int armor = PlayerStatsRuntime.GetIntStat(StatType.Armor, 0);
         int finalDamage = Mathf.Max(1, damage - armor);
         currentHealth -= finalDamage;
@@ -99,6 +166,54 @@ public class PlayerController : MonoBehaviour
         if (currentHealth <= 0) Die();
     }
 
+    // Recovery pasiv: vindeca 0.5 inima la fiecare 15 secunde, pana la maxim
+    void TickRecovery()
+    {
+        if (currentHealth >= maxHealth) { recoveryTimer = 0f; return; }
+
+        recoveryTimer += Time.deltaTime;
+        if (recoveryTimer >= recoveryInterval)
+        {
+            recoveryTimer -= recoveryInterval;
+            currentHealth = Mathf.Min(currentHealth + recoveryAmount, maxHealth);
+            if (healthUI != null) healthUI.UpdateHearts(currentHealth);
+        }
+    }
+
+    // Itemul "Ham": vindeca un procent din viata maxima (ex. 25%)
+    public void HealPercent(float percent)
+    {
+        if (currentHealth <= 0) return;
+        int heal = Mathf.Max(1, Mathf.RoundToInt(maxHealth * percent));
+        currentHealth = Mathf.Min(currentHealth + heal, maxHealth);
+        if (healthUI == null) healthUI = Object.FindAnyObjectByType<HealthUI>();
+        if (healthUI != null) healthUI.UpdateHearts(currentHealth);
+    }
+
+    // Itemul "Heart": reduce intervalul de regen si creste cantitatea de heal
+    public void BoostRecovery(float intervalReduce, int amountAdd)
+    {
+        recoveryInterval = Mathf.Max(2f, recoveryInterval - intervalReduce);
+        recoveryAmount   = Mathf.Min(recoveryAmount + amountAdd, 6);
+    }
+
+    public float RecoveryInterval => recoveryInterval;
+    public int   RecoveryAmount   => recoveryAmount;
+
+    // Itemul "Beer": adauga o inima noua (goala) la maxim si vindeca o inima (+2 HP intern).
+    public void AddHeart()
+    {
+        maxHealth += 2;
+        currentHealth = Mathf.Min(currentHealth + 2, maxHealth);
+
+        if (healthUI == null) healthUI = Object.FindAnyObjectByType<HealthUI>();
+        if (healthUI != null)
+        {
+            healthUI.EnsureHeartCount(maxHealth / 2);
+            healthUI.UpdateHearts(currentHealth);
+        }
+    }
+
     IEnumerator FlashRed()
     {
         sr.color = Color.red;
@@ -109,7 +224,9 @@ public class PlayerController : MonoBehaviour
     void Die()
     {
         Debug.Log("Jucatorul a murit!");
-        if (anim != null) { try { anim.SetTrigger("dead"); } catch {} }
+        if (anim != null && anim.enabled) { try { anim.SetTrigger("dead"); } catch {} }
+        // Animatia de moarte pentru vampire (Countess/Dracula/Vampire Girl)
+        if (vampAnim != null) vampAnim.TriggerDead();
         rb.linearVelocity = Vector2.zero;
     }
 }

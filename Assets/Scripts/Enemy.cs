@@ -52,6 +52,9 @@ public class Enemy : MonoBehaviour
         HealthUI ui = Object.FindAnyObjectByType<HealthUI>();
         if (ui != null) ui.AddKill();
 
+        ShieldSystem.RegisterKill();
+        WorldCurrencySpawner.NotifyKill(transform.position);
+
         if (deathEffectPrefab != null)
         {
             Instantiate(deathEffectPrefab, transform.position, Quaternion.identity);

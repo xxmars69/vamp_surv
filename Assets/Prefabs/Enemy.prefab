@@ -154,7 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   speed: 3
-  maxHealth: 1
+  maxHealth: 13
   blueXpGemPrefab: {fileID: 8620064864296546271, guid: 42ef98748a2f6354293acf9be117b8a1, type: 3}
   redXpGemPrefab: {fileID: 4645498630408491348, guid: d15ab39f098962345be45909f7de678c, type: 3}
   deathEffectPrefab: {fileID: 0}

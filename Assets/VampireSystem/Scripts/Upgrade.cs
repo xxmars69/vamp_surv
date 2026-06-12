@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace CelikenVP
 {
+    // [Serializable] e obligatoriu ca Unity sa salveze/incarce lista de upgrades din .asset;
+    // fara el, item.upgrades era mereu gol la runtime si niciun item nu aplica statul.
+    [System.Serializable]
     public class Upgrade
     {
         [SerializeField] private StatType type;

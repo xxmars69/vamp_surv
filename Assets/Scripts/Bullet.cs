@@ -35,7 +35,9 @@ public class Bullet : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            int damage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * PlayerStatsRuntime.GetMultiplier(StatType.Might)));
+            // Damage = profilul personajului * Might (incluzand bonusurile din iteme, ex. Dagger)
+            int baseDmg = CharacterProfile.Current.damage;
+            int damage  = Mathf.Max(1, Mathf.RoundToInt(baseDmg * PlayerStatsRuntime.GetMultiplier(StatType.Might)));
             Enemy enemy = other.GetComponent<Enemy>();
             if (enemy != null)
                 enemy.TakeDamage(damage);
