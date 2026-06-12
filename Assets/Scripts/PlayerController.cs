@@ -120,6 +120,7 @@ public class PlayerController : MonoBehaviour
         if (anim != null && anim.enabled) anim.SetBool("isMoving", IsMoving);
 
         TickRecovery();
+        TickBuffs();
 
         if (IsMatilda || IsVampire)
         {
@@ -142,8 +143,27 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         if (currentHealth <= 0) return;
-        float statSpeed = baseMoveSpeed * PlayerStatsRuntime.GetMultiplier(StatType.MoveSpeed);
+        float statSpeed = baseMoveSpeed * PlayerStatsRuntime.GetMultiplier(StatType.MoveSpeed) * speedBuffMult;
         rb.MovePosition(rb.position + moveInput.normalized * statSpeed * Time.fixedDeltaTime);
+    }
+
+    // ── Buff/Debuff temporar (Partea 23) ────────────────────────────────
+    private float speedBuffMult = 1f;
+    private float speedBuffTimer;
+
+    public void ApplySpeedBuff(float multiplier, float duration)
+    {
+        speedBuffMult = multiplier;
+        speedBuffTimer = duration;
+    }
+
+    void TickBuffs()
+    {
+        if (speedBuffTimer > 0f)
+        {
+            speedBuffTimer -= Time.deltaTime;
+            if (speedBuffTimer <= 0f) speedBuffMult = 1f;
+        }
     }
 
     public void TakeDamage(int damage)

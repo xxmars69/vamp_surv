@@ -75,7 +75,12 @@ public class HamPickup : MonoBehaviour
     {
         if (!col.CompareTag("Player")) return;
         var pc = col.GetComponent<PlayerController>();
-        if (pc != null) pc.HealPercent(healPercent);
+        if (pc != null)
+        {
+            pc.HealPercent(healPercent);
+            pc.ApplySpeedBuff(1.5f, 6f); // buff: +50% viteza 6 secunde
+        }
+        SoundManager.Play(SoundManager.Sfx.Pickup);
         Destroy(gameObject);
     }
 }

@@ -20,6 +20,16 @@ public static class CharacterProfile
 
     public static Profile GetProfile(CharacterSelectionData.CharacterType type)
     {
+        // Profil de baza + bonusurile permanente cumparate in meniu (MetaProgress)
+        Profile p = BaseProfile(type);
+        p.damage       += MetaProgress.DamageBonus;
+        p.hearts       += MetaProgress.HealthBonus;
+        p.speedPercent += MetaProgress.SpeedBonus;
+        return p;
+    }
+
+    static Profile BaseProfile(CharacterSelectionData.CharacterType type)
+    {
         switch (type)
         {
             case CharacterSelectionData.CharacterType.Matilda:

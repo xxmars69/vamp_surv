@@ -1,4 +1,5 @@
 using UnityEngine;
+using CelikenVP;
 
 // Spawn central de inamici cu reguli pe minute:
 //  - min 0-2: doar lilieci (Enemy normal, 13 hp)
@@ -50,6 +51,21 @@ public class EnemyWaveManager : MonoBehaviour
         return Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None).Length;
     }
 
+    // Scalarea inamicilor: HP/speed cresc cu timpul, accelerat de stat-ul Curse.
+    // Trebuie apelat imediat dupa Instantiate (inainte ca Enemy.Start sa citeasca maxHealth).
+    public static void ApplyScaling(Enemy e)
+    {
+        if (e == null) return;
+        int minute = Mathf.FloorToInt(Time.timeSinceLevelLoad / 60f);
+        float curse = PlayerStatsRuntime.GetMultiplier(StatType.Curse); // 1.0 = 100%
+
+        float hpFactor    = (1f + minute * 0.15f) * curse * GameDifficulty.HealthMultiplier;
+        float speedFactor = (1f + minute * 0.03f) * Mathf.Min(curse, 1.5f); // viteza creste mai lent
+
+        e.maxHealth = Mathf.Max(1, Mathf.RoundToInt(e.maxHealth * hpFactor));
+        e.speed    *= speedFactor;
+    }
+
     System.Collections.IEnumerator SpawnWave()
     {
         int minute = CurrentMinute();
@@ -76,15 +92,17 @@ public class EnemyWaveManager : MonoBehaviour
         bool spawnVampire2 = minute >= 2 && Random.value < 0.5f;
 
         GameObject go = Instantiate(enemyPrefab, pos, Quaternion.identity);
+        Enemy enemy = go.GetComponent<Enemy>();
 
         if (spawnVampire2)
         {
             // Transforma liliacul intr-un inamic Vampires2: HP 25 + animatie proprie
-            Enemy e = go.GetComponent<Enemy>();
-            if (e != null) e.maxHealth = 25;
+            if (enemy != null) enemy.maxHealth = 25;
             go.transform.localScale = Vector3.one * 1.3f; // putin mai mare
             if (go.GetComponent<EnemyVampireAnimator>() == null)
                 go.AddComponent<EnemyVampireAnimator>();
         }
+
+        ApplyScaling(enemy); // scalare pe timp + Curse
     }
 }

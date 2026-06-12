@@ -20,6 +20,14 @@ public class OrbitingBooks : MonoBehaviour
         Reposition();
     }
 
+    // Evolutie: adauga carti peste limita normala + accelereaza rotatia
+    public void Evolve(int extraBooks, float speedMultiplier)
+    {
+        baseRotationSpeed *= speedMultiplier;
+        for (int i = 0; i < extraBooks; i++)
+            AddBook(99); // ignora limita normala
+    }
+
     // Apelat la fiecare pick al itemului - adauga o carte (pana la max)
     public void AddBook(int maxBooks)
     {

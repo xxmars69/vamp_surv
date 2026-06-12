@@ -35,6 +35,13 @@ public class AutoAttack : MonoBehaviour
         }
     }
 
+    // Evolutie: accelereaza ritmul de atac (multiplicator < 1 = mai rapid)
+    public void BoostFireRate(float multiplier)
+    {
+        baseFireInterval      *= multiplier;
+        matildaAttackInterval *= multiplier;
+    }
+
     void Update()
     {
         if (player == null || player.currentHealth <= 0) return;

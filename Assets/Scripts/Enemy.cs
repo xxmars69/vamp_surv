@@ -12,6 +12,12 @@ public class Enemy : MonoBehaviour
     private int currentHealth;
     private static int totalEnemiesKilled;
 
+    [Header("Knockback")]
+    public float knockbackForce = 6f;
+    public float knockbackDuration = 0.15f;
+    private Vector2 knockbackVelocity;
+    private float knockbackTimer;
+
     void Start()
     {
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
@@ -25,8 +31,17 @@ public class Enemy : MonoBehaviour
     {
         if (player == null) return;
 
-        // Miscare spre jucator
-        transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
+        // Cat timp e in knockback, e impins inapoi si nu urmareste jucatorul
+        if (knockbackTimer > 0f)
+        {
+            knockbackTimer -= Time.deltaTime;
+            transform.position += (Vector3)(knockbackVelocity * Time.deltaTime);
+            return;
+        }
+
+        // Miscare spre jucator (cu debuff de incetinire daca e activ)
+        float slow = GameManager.Instance != null ? GameManager.Instance.EnemySlowMultiplier : 1f;
+        transform.position = Vector2.MoveTowards(transform.position, player.position, speed * slow * Time.deltaTime);
 
         // Oglindire (Flip) in functie de pozitia jucatorului
         if (spriteRenderer != null)
@@ -36,6 +51,13 @@ public class Enemy : MonoBehaviour
             else
                 spriteRenderer.flipX = false; // Se uita spre dreapta
         }
+    }
+
+    // Impinge inamicul intr-o directie pentru o scurta durata
+    public void Knockback(Vector2 direction)
+    {
+        knockbackVelocity = direction.normalized * knockbackForce;
+        knockbackTimer = knockbackDuration;
     }
 
     void OnTriggerEnter2D(Collider2D col)
@@ -68,8 +90,20 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        // Knockback dinspre jucator (sursa loviturilor)
+        if (player != null) TakeDamage(damage, player.position);
+        else TakeDamage(damage, transform.position);
+    }
+
+    public void TakeDamage(int damage, Vector2 hitFrom)
+    {
         currentHealth -= damage;
         DamageNumber.Spawn(transform.position, damage);
+
+        Vector2 dir = (Vector2)transform.position - hitFrom;
+        if (dir.sqrMagnitude < 0.001f) dir = Random.insideUnitCircle;
+        Knockback(dir);
+
         if (currentHealth <= 0)
             Die();
     }

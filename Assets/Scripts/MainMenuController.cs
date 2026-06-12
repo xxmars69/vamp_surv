@@ -23,6 +23,9 @@ public class MainMenuController : MonoBehaviour
     private readonly Color panelDark      = new Color(0.08f, 0.10f, 0.14f, 0.95f);
     private readonly Color buttonColor    = new Color(0.20f, 0.55f, 0.45f, 1f);
 
+    private GameObject shopPanel;
+    private readonly Image[] difficultyButtons = new Image[3];
+
     void Start()
     {
         SetPanel(mainPanel, true);
@@ -30,6 +33,7 @@ public class MainMenuController : MonoBehaviour
         SetPanel(creditsPanel, false);
 
         BuildCharacterSelectionUI();
+        BuildShopUI();
     }
 
     // ── Main panel buttons ────────────────────────────────────────────────
@@ -62,8 +66,90 @@ public class MainMenuController : MonoBehaviour
         SceneManager.LoadScene(gameSceneName);
     }
 
+    // Butonul SETTINGS deschide acum magazinul de upgrade-uri permanente
     public void SettingsPlaceholder()
     {
+        ShowShop();
+    }
+
+    public void ShowShop()
+    {
+        SetPanel(mainPanel, false);
+        SetPanel(characterPanel, false);
+        SetPanel(creditsPanel, false);
+        SetPanel(shopPanel, true);
+        RebuildShop();
+    }
+
+    void BackFromShop()
+    {
+        SetPanel(shopPanel, false);
+        SetPanel(mainPanel, true);
+    }
+
+    // ── Magazin de power-up-uri permanente (Partile 26 + 28) ─────────────
+    void BuildShopUI()
+    {
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas == null) return;
+
+        shopPanel = CreateObject("ShopPanel", canvas.transform);
+        RectTransform rect = shopPanel.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero; rect.offsetMax = Vector2.zero;
+        shopPanel.AddComponent<Image>().color = panelDark;
+        SetPanel(shopPanel, false);
+    }
+
+    void RebuildShop()
+    {
+        if (shopPanel == null) return;
+        foreach (Transform c in shopPanel.transform) Destroy(c.gameObject);
+
+        GameObject title = CreateLabel(shopPanel.transform, "MAGAZIN - UPGRADE-URI PERMANENTE", 30, FontStyle.Bold);
+        AnchorTopCenter(title.GetComponent<RectTransform>(), 0f, -30f, 800f, 50f);
+
+        GameObject goldLbl = CreateLabel(shopPanel.transform, "Gold total: " + MetaProgress.TotalGold, 24, FontStyle.Bold);
+        AnchorTopCenter(goldLbl.GetComponent<RectTransform>(), 0f, -85f, 600f, 40f);
+        goldLbl.GetComponent<Text>().color = new Color(1f, 0.9f, 0.3f);
+
+        // Container vertical pentru randuri
+        GameObject col = CreateObject("ShopCol", shopPanel.transform);
+        RectTransform colRect = col.GetComponent<RectTransform>();
+        colRect.anchorMin = new Vector2(0.5f, 0.5f);
+        colRect.anchorMax = new Vector2(0.5f, 0.5f);
+        colRect.pivot = new Vector2(0.5f, 0.5f);
+        colRect.sizeDelta = new Vector2(520f, 240f);
+        var vl = col.AddComponent<VerticalLayoutGroup>();
+        vl.spacing = 14f; vl.childAlignment = TextAnchor.MiddleCenter;
+        vl.childForceExpandWidth = true; vl.childForceExpandHeight = false;
+
+        ShopRow(col.transform, "Damage  +1",
+            MetaProgress.DamageLevel, MetaProgress.MaxDamage, MetaProgress.DamageCost,
+            () => { if (MetaProgress.BuyDamage()) RebuildShop(); });
+        ShopRow(col.transform, "Health  +1 inima",
+            MetaProgress.HealthLevel, MetaProgress.MaxHealth, MetaProgress.HealthCost,
+            () => { if (MetaProgress.BuyHealth()) RebuildShop(); });
+        ShopRow(col.transform, "Speed  +1%",
+            MetaProgress.SpeedLevel, MetaProgress.MaxSpeed, MetaProgress.SpeedCost,
+            () => { if (MetaProgress.BuySpeed()) RebuildShop(); });
+
+        GameObject back = CreateBigButton(shopPanel.transform, "BACK", new Color(0.30f, 0.30f, 0.32f, 1f), BackFromShop);
+        RectTransform backRect = back.GetComponent<RectTransform>();
+        backRect.anchorMin = new Vector2(0f, 0f); backRect.anchorMax = new Vector2(0f, 0f);
+        backRect.pivot = new Vector2(0f, 0f);
+        backRect.sizeDelta = new Vector2(110f, 38f);
+        backRect.anchoredPosition = new Vector2(20f, 20f);
+    }
+
+    void ShopRow(Transform parent, string label, int level, int maxLevel, int cost, UnityEngine.Events.UnityAction onBuy)
+    {
+        bool maxed = level >= maxLevel;
+        string text = label + "   (Lv " + level + "/" + maxLevel + ")   " + (maxed ? "MAX" : cost + " gold");
+        GameObject btn = CreateBigButton(parent, text,
+            maxed ? new Color(0.25f, 0.25f, 0.27f, 1f) : buttonColor, maxed ? (UnityEngine.Events.UnityAction)null : onBuy);
+        LayoutElement le = btn.AddComponent<LayoutElement>();
+        le.minHeight = 50f;
     }
 
     // ── Character selection UI ────────────────────────────────────────────
@@ -132,6 +218,26 @@ public class MainMenuController : MonoBehaviour
         vampireGirlCard = CreateCharacterCard(row.transform, "Vampire Girl",
                           VampireAnimator.LoadIcon("Vampire_Girl"),
                           CharacterSelectionData.CharacterType.Vampire_Girl, 1f);
+
+        // Rand de dificultate (Usor / Normal / Greu) - adaptarea "Level Select"
+        GameObject diffRow = CreateObject("DifficultyRow", contentRoot.transform);
+        RectTransform drRect = diffRow.GetComponent<RectTransform>();
+        drRect.anchorMin = new Vector2(0.5f, 0f);
+        drRect.anchorMax = new Vector2(0.5f, 0f);
+        drRect.pivot     = new Vector2(0.5f, 0f);
+        drRect.sizeDelta = new Vector2(420f, 44f);
+        drRect.anchoredPosition = new Vector2(0f, 100f);
+        var drLayout = diffRow.AddComponent<HorizontalLayoutGroup>();
+        drLayout.spacing = 10f; drLayout.childAlignment = TextAnchor.MiddleCenter;
+        drLayout.childForceExpandWidth = true; drLayout.childForceExpandHeight = true;
+
+        foreach (GameDifficulty.Level lvl in System.Enum.GetValues(typeof(GameDifficulty.Level)))
+        {
+            GameDifficulty.Level captured = lvl;
+            GameObject db = CreateBigButton(diffRow.transform, GameDifficulty.Name(lvl),
+                cardUnselected, () => { GameDifficulty.Selected = captured; RefreshSelectionState(); });
+            difficultyButtons[(int)lvl] = db.GetComponent<Image>();
+        }
 
         // Buton START - lat, jos
         GameObject startBtn = CreateBigButton(contentRoot.transform, "START", buttonColor, StartGame);
@@ -293,6 +399,13 @@ public class MainMenuController : MonoBehaviour
         ColorCard(countessCard,    CharacterSelectionData.CharacterType.Countess_Vampire);
         ColorCard(draculaCard,     CharacterSelectionData.CharacterType.Dracula);
         ColorCard(vampireGirlCard, CharacterSelectionData.CharacterType.Vampire_Girl);
+
+        // Evidentiaza dificultatea selectata
+        for (int i = 0; i < difficultyButtons.Length; i++)
+        {
+            if (difficultyButtons[i] == null) continue;
+            difficultyButtons[i].color = (int)GameDifficulty.Selected == i ? cardSelected : cardUnselected;
+        }
 
         RebuildStatsPanel();
     }

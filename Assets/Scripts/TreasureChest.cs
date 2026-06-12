@@ -29,6 +29,27 @@ public class TreasureChest : MonoBehaviour
         if (opened || !col.CompareTag("Player")) return;
         opened = true;
         SoundManager.Play(SoundManager.Sfx.Chest);
+        var c = GetComponent<Collider2D>();
+        if (c != null) c.enabled = false;
+        StartCoroutine(OpenAnimation());
+    }
+
+    // Animatie de deschidere: pop (scale up + rotatie) inainte de a oferi upgrade-ul
+    System.Collections.IEnumerator OpenAnimation()
+    {
+        var sr = GetComponent<SpriteRenderer>();
+        Vector3 baseScale = transform.localScale;
+        float t = 0f, dur = 0.45f;
+        while (t < dur)
+        {
+            t += Time.deltaTime;
+            float p = t / dur;
+            transform.localScale = baseScale * (1f + Mathf.Sin(p * Mathf.PI) * 0.8f); // pop
+            transform.Rotate(0f, 0f, 720f * Time.deltaTime);                          // spin
+            if (sr != null) sr.color = Color.Lerp(Color.white, new Color(1f, 0.9f, 0.3f), Mathf.Sin(p * Mathf.PI));
+            yield return null;
+        }
+
         if (GameManager.Instance != null) GameManager.Instance.OpenUpgradeChoice();
         Destroy(gameObject);
     }

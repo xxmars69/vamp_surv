@@ -48,13 +48,15 @@ public class EnemySpawner : MonoBehaviour
         bool vampire2 = minute >= 2 && Random.value < 0.5f;
 
         GameObject go = Instantiate(enemyPrefab, randomPos, Quaternion.identity);
+        Enemy e = go.GetComponent<Enemy>();
         if (vampire2)
         {
-            Enemy e = go.GetComponent<Enemy>();
             if (e != null) e.maxHealth = 25;
             go.transform.localScale = Vector3.one * 1.3f;
             if (go.GetComponent<EnemyVampireAnimator>() == null)
                 go.AddComponent<EnemyVampireAnimator>();
         }
+
+        EnemyWaveManager.ApplyScaling(e); // scalare pe timp + Curse
     }
 }

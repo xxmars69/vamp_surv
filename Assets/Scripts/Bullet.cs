@@ -40,7 +40,7 @@ public class Bullet : MonoBehaviour
             int damage  = Mathf.Max(1, Mathf.RoundToInt(baseDmg * PlayerStatsRuntime.GetMultiplier(StatType.Might)));
             Enemy enemy = other.GetComponent<Enemy>();
             if (enemy != null)
-                enemy.TakeDamage(damage);
+                enemy.TakeDamage(damage, transform.position); // knockback in directia glontelui
             else
                 Destroy(other.gameObject);
             Destroy(gameObject);

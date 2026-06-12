@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
     private int gold = 0;
 
     private Image xpBarFill; // bara de XP full-width sus pe ecran
+    private InventoryUI inventoryUI;
 
     void Awake()
     {
@@ -44,7 +45,40 @@ public class GameManager : MonoBehaviour
         HealthUI.PositionTopLeft(goldText, new Vector2(12f, -62f), 14);
 
         CreateXPBar();
+
+        // Bara de inventar (jos)
+        Canvas canvas = FindAnyObjectByType<Canvas>();
+        if (canvas != null)
+        {
+            inventoryUI = gameObject.AddComponent<InventoryUI>();
+            inventoryUI.Init(canvas);
+        }
+
         UpdateResourceUI();
+    }
+
+    public void RefreshInventory()
+    {
+        if (inventoryUI != null) inventoryUI.Refresh();
+    }
+
+    // ── Debuff inamici (Partea 23): incetinire temporara ────────────────
+    public float EnemySlowMultiplier { get; private set; } = 1f;
+    private float enemySlowTimer;
+
+    public void SlowEnemies(float multiplier, float duration)
+    {
+        EnemySlowMultiplier = multiplier;
+        enemySlowTimer = duration;
+    }
+
+    void Update()
+    {
+        if (enemySlowTimer > 0f)
+        {
+            enemySlowTimer -= Time.unscaledDeltaTime;
+            if (enemySlowTimer <= 0f) EnemySlowMultiplier = 1f;
+        }
     }
 
     // Bara de XP orizontala lipita de marginea de sus (stil Vampire Survivors)
@@ -95,6 +129,7 @@ public class GameManager : MonoBehaviour
             xpToLevelUp = Mathf.RoundToInt(xpToLevelUp * 1.25f);
             UpdateResourceUI();
             SoundManager.Play(SoundManager.Sfx.LevelUp);
+            SlowEnemies(0.4f, 2f); // debuff: inamicii incetiniti 2s dupa level-up
             ShowUpgradeUI();
         }
     }
@@ -191,11 +226,15 @@ public class GameManager : MonoBehaviour
         float t   = ui != null ? ui.SurvivalTime : 0f;
         string time = ((int)t / 60).ToString("00") + ":" + ((int)t % 60).ToString("00");
 
+        // Banca de gold persistenta (meta-progresie)
+        MetaProgress.BankRunGold(gold);
+
         CreateMenuText(panel.transform, "GAME OVER", 48);
         CreateMenuText(panel.transform, "Timp supravietuit:  " + time, 28);
         CreateMenuText(panel.transform, "Kills:  " + kills, 28);
-        CreateMenuText(panel.transform, "Gold:  " + gold, 28);
+        CreateMenuText(panel.transform, "Gold runda:  " + gold, 28);
         CreateMenuText(panel.transform, "Level:  " + level, 28);
+        CreateMenuText(panel.transform, "Gold total:  " + MetaProgress.TotalGold, 26);
 
         CreateMenuButton(panel.transform, "RESTART", RestartGame);
         CreateMenuButton(panel.transform, "MENIU", GoToMenu);
@@ -311,6 +350,8 @@ public class GameManager : MonoBehaviour
                 {
                     Player.Instance.PickItem(selectedItem);
                     ApplyItemSpecialEffects(selectedItem);
+                    RefreshInventory();
+                    CheckEvolutions();
                     ResumeGame();
                 });
                 buttonsCreated++;
@@ -386,8 +427,21 @@ public class GameManager : MonoBehaviour
         GameObject buttonObject = new GameObject(item.objectName + " Button", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
         buttonObject.transform.SetParent(parent, false);
 
-        buttonObject.GetComponent<Image>().color = new Color(0.18f, 0.28f, 0.36f, 1f);
+        // Culoare in functie de raritate (background inchis tentat + border pe stanga)
+        Color rarity = RarityColor(item.objectRarity);
+        buttonObject.GetComponent<Image>().color = new Color(rarity.r * 0.35f, rarity.g * 0.35f, rarity.b * 0.35f, 1f);
         buttonObject.GetComponent<Button>().onClick.AddListener(action);
+
+        // Border vertical de raritate (banda colorata in stanga)
+        GameObject border = new GameObject("RarityBorder", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        border.transform.SetParent(buttonObject.transform, false);
+        RectTransform bRect = border.GetComponent<RectTransform>();
+        bRect.anchorMin = new Vector2(0f, 0f);
+        bRect.anchorMax = new Vector2(0f, 1f);
+        bRect.pivot     = new Vector2(0f, 0.5f);
+        bRect.sizeDelta = new Vector2(6f, 0f);
+        bRect.anchoredPosition = Vector2.zero;
+        border.GetComponent<Image>().color = rarity;
 
         // Iconita - ancorata in stanga butonului
         Sprite icon = RuntimeVisualRepair.LoadSpriteRuntime(IconPath(item), 32f);
@@ -429,8 +483,95 @@ public class GameManager : MonoBehaviour
         label.verticalOverflow   = VerticalWrapMode.Overflow;
     }
 
+    // ── Evolutii de arme (Partea 12) ────────────────────────────────────
+    // Arma la nivel max + pasiv specific la nivel max => arma evoluata.
+    private readonly HashSet<string> triggeredEvolutions = new();
+
+    void CheckEvolutions()
+    {
+        if (Player.Instance == null) return;
+
+        // Reteta 1: Revolver (max) + Dagger (max) => "Gatling" (trage de 2x mai repede)
+        TryEvolve("Gatling", "Revolver", "Dagger", () =>
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            var aa = p != null ? p.GetComponent<AutoAttack>() : null;
+            if (aa != null) aa.BoostFireRate(0.5f);
+        });
+
+        // Reteta 2: Book of Faith (max) + Luck (max) => "Holy Storm" (+3 carti, rotatie 2x)
+        TryEvolve("Holy Storm", "Book of Faith", "Luck", () =>
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            var ob = p != null ? p.GetComponent<OrbitingBooks>() : null;
+            if (ob != null) ob.Evolve(3, 2f);
+        });
+
+        // Reteta 3: Shield (max) + Heart (max) => "Aegis" (scut la fiecare kill)
+        TryEvolve("Aegis", "Shield", "Heart", () =>
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            var ss = p != null ? p.GetComponent<ShieldSystem>() : null;
+            if (ss != null) ss.SetItemLevel(5); // prag minim = 1 kill
+        });
+    }
+
+    void TryEvolve(string evoName, string weaponName, string passiveName, System.Action effect)
+    {
+        if (triggeredEvolutions.Contains(evoName)) return;
+        if (!IsItemMaxed(weaponName) || !IsItemMaxed(passiveName)) return;
+
+        triggeredEvolutions.Add(evoName);
+        effect();
+        ShowEvolutionNotice(evoName);
+    }
+
+    bool IsItemMaxed(string itemName)
+    {
+        foreach (ObjectSO it in availableItems)
+        {
+            if (it != null && it.objectName == itemName)
+                return Player.Instance.GetCurrentItemLevel(it) >= it.objectMaxLevel;
+        }
+        return false;
+    }
+
+    void ShowEvolutionNotice(string evoName)
+    {
+        Canvas canvas = FindAnyObjectByType<Canvas>();
+        if (canvas == null) return;
+
+        GameObject go = new GameObject("EvoNotice", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+        go.transform.SetParent(canvas.transform, false);
+        var rect = go.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.7f);
+        rect.anchorMax = new Vector2(0.5f, 0.7f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(700f, 60f);
+
+        var t = go.GetComponent<Text>();
+        t.text = "EVOLUTIE!  " + evoName;
+        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        t.fontSize = 34;
+        t.fontStyle = FontStyle.Bold;
+        t.color = new Color(1f, 0.85f, 0.2f);
+        t.alignment = TextAnchor.MiddleCenter;
+
+        Destroy(go, 3f);
+        SoundManager.Play(SoundManager.Sfx.Chest);
+    }
+
+    // Culoarea de raritate dupa objectRarity (mai mic = mai rar/valoros)
+    static Color RarityColor(int rarity)
+    {
+        if (rarity >= 100) return new Color(0.85f, 0.85f, 0.85f); // Common - alb
+        if (rarity >= 70)  return new Color(0.35f, 0.85f, 0.35f); // Uncommon - verde
+        if (rarity >= 50)  return new Color(0.35f, 0.6f, 1f);     // Rare - albastru
+        return new Color(0.75f, 0.4f, 1f);                        // Epic - mov
+    }
+
     // Calea iconitei pentru fiecare item (numele fisierului difera de objectName la cateva)
-    string IconPath(ObjectSO item)
+    public static string IconPath(ObjectSO item)
     {
         switch (item.objectName)
         {
