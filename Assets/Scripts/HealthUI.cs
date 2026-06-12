@@ -178,6 +178,9 @@ public class HealthUI : MonoBehaviour
         {
             isDead = true;
             if (gameOverPanel != null) gameOverPanel.SetActive(true);
+            // Ecran de rezultate
+            if (GameManager.Instance != null) GameManager.Instance.GameOver();
+            SoundManager.Play(SoundManager.Sfx.GameOver);
         }
     }
 
@@ -186,4 +189,7 @@ public class HealthUI : MonoBehaviour
         killCount++;
         if (killText != null) killText.text = "Kills: " + killCount;
     }
+
+    public int   KillCount    => killCount;
+    public float SurvivalTime => Time.time - startTime;
 }

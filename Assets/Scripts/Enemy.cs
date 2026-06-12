@@ -69,6 +69,7 @@ public class Enemy : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
+        DamageNumber.Spawn(transform.position, damage);
         if (currentHealth <= 0)
             Die();
     }

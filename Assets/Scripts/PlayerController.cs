@@ -158,6 +158,7 @@ public class PlayerController : MonoBehaviour
         int finalDamage = Mathf.Max(1, damage - armor);
         currentHealth -= finalDamage;
         StartCoroutine(FlashRed());
+        SoundManager.Play(SoundManager.Sfx.Hurt);
 
         if (healthUI != null) healthUI.UpdateHearts(currentHealth);
 

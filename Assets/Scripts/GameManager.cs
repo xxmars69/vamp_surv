@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour
     private int xpToLevelUp = 50;
     private int gold = 0;
 
+    private Image xpBarFill; // bara de XP full-width sus pe ecran
+
     void Awake()
     {
         Instance = this;
@@ -38,10 +40,41 @@ public class GameManager : MonoBehaviour
 
         // HUD compact stanga-sus: LV/XP pe randul 1, inimile pe randul 2 (in HealthUI), Gold pe randul 3
         // Stanga-sus: LV/XP (rand 1) -> inimi (rand 2, in HealthUI la y=-30) -> Gold (rand 3)
-        HealthUI.PositionTopLeft(xpText,   new Vector2(12f, -8f),  14);
-        HealthUI.PositionTopLeft(goldText, new Vector2(12f, -52f), 14);
+        HealthUI.PositionTopLeft(xpText,   new Vector2(12f, -18f),  14);
+        HealthUI.PositionTopLeft(goldText, new Vector2(12f, -62f), 14);
 
+        CreateXPBar();
         UpdateResourceUI();
+    }
+
+    // Bara de XP orizontala lipita de marginea de sus (stil Vampire Survivors)
+    void CreateXPBar()
+    {
+        Canvas canvas = FindAnyObjectByType<Canvas>();
+        if (canvas == null) return;
+
+        // Fundal bara
+        GameObject bg = new GameObject("XPBar_BG", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        bg.transform.SetParent(canvas.transform, false);
+        var bgRect = bg.GetComponent<RectTransform>();
+        bgRect.anchorMin = new Vector2(0f, 1f);
+        bgRect.anchorMax = new Vector2(1f, 1f);
+        bgRect.pivot     = new Vector2(0.5f, 1f);
+        bgRect.offsetMin = new Vector2(0f, -8f);
+        bgRect.offsetMax = new Vector2(0f, 0f);
+        bg.GetComponent<Image>().color = new Color(0.1f, 0.1f, 0.12f, 0.9f);
+
+        // Fill
+        GameObject fill = new GameObject("XPBar_Fill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        fill.transform.SetParent(bg.transform, false);
+        var fillRect = fill.GetComponent<RectTransform>();
+        fillRect.anchorMin = new Vector2(0f, 0f);
+        fillRect.anchorMax = new Vector2(0f, 1f);
+        fillRect.pivot     = new Vector2(0f, 0.5f);
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+        xpBarFill = fill.GetComponent<Image>();
+        xpBarFill.color = new Color(0.3f, 0.7f, 1f, 1f); // albastru XP
     }
 
     public void AddXP()
@@ -61,6 +94,7 @@ public class GameManager : MonoBehaviour
             level++;
             xpToLevelUp = Mathf.RoundToInt(xpToLevelUp * 1.25f);
             UpdateResourceUI();
+            SoundManager.Play(SoundManager.Sfx.LevelUp);
             ShowUpgradeUI();
         }
     }
@@ -70,6 +104,12 @@ public class GameManager : MonoBehaviour
         int greedMultiplier = Mathf.Max(1, Mathf.RoundToInt(PlayerStatsRuntime.GetPercentStat(StatType.Greed, 100f)));
         gold += Mathf.RoundToInt(amount * (greedMultiplier / 100f));
         UpdateResourceUI();
+    }
+
+    // Apelat de cufarul de la miniboss - deschide alegerea de upgrade
+    public void OpenUpgradeChoice()
+    {
+        ShowUpgradeUI();
     }
 
     void ShowUpgradeUI()
@@ -117,10 +157,54 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
+    private bool gameOverShown;
+
     public void GameOver()
     {
+        if (gameOverShown) return;
+        gameOverShown = true;
         Time.timeScale = 0f;
         if (gameOverUI != null) gameOverUI.SetActive(true);
+        BuildResultsScreen();
+    }
+
+    // Ecran de rezultate (timp supravietuit, kills, gold, level)
+    void BuildResultsScreen()
+    {
+        Canvas canvas = FindAnyObjectByType<Canvas>();
+        if (canvas == null) return;
+
+        GameObject panel = new GameObject("ResultsScreen", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        panel.transform.SetParent(canvas.transform, false);
+        var rect = panel.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero; rect.offsetMax = Vector2.zero;
+        panel.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.88f);
+
+        var layout = panel.AddComponent<VerticalLayoutGroup>();
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.spacing = 14f;
+
+        // Date
+        HealthUI ui = FindAnyObjectByType<HealthUI>();
+        int kills = ui != null ? ui.KillCount : 0;
+        float t   = ui != null ? ui.SurvivalTime : 0f;
+        string time = ((int)t / 60).ToString("00") + ":" + ((int)t % 60).ToString("00");
+
+        CreateMenuText(panel.transform, "GAME OVER", 48);
+        CreateMenuText(panel.transform, "Timp supravietuit:  " + time, 28);
+        CreateMenuText(panel.transform, "Kills:  " + kills, 28);
+        CreateMenuText(panel.transform, "Gold:  " + gold, 28);
+        CreateMenuText(panel.transform, "Level:  " + level, 28);
+
+        CreateMenuButton(panel.transform, "RESTART", RestartGame);
+        CreateMenuButton(panel.transform, "MENIU", GoToMenu);
+    }
+
+    public void GoToMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
     }
 
     public void RestartGame()
@@ -150,6 +234,9 @@ public class GameManager : MonoBehaviour
             xpText.text = "LV " + level + "  XP " + currentXP + "/" + xpToLevelUp;
         if (goldText != null)
             goldText.text = "Gold: " + gold;
+        if (xpBarFill != null)
+            xpBarFill.rectTransform.anchorMax = new Vector2(
+                Mathf.Clamp01((float)currentXP / Mathf.Max(1, xpToLevelUp)), 1f);
     }
 
     void CreateRuntimeUpgradeMenu()

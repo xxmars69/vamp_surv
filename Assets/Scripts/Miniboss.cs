@@ -126,6 +126,7 @@ public class Miniboss : MonoBehaviour
     {
         if (dying) return;
         currentHealth -= amount;
+        DamageNumber.Spawn(transform.position, amount, crit: true);
         if (currentHealth <= 0)
             Die();
         // Fara stare de Hurt care blocheaza - jucatorul loveste foarte des,
@@ -147,6 +148,9 @@ public class Miniboss : MonoBehaviour
 
         HealthUI ui = Object.FindAnyObjectByType<HealthUI>();
         if (ui != null) ui.AddKill();
+
+        // Dropeaza un cufar cu recompensa (upgrade)
+        TreasureChest.Spawn(transform.position);
     }
 
     IEnumerator DestroyAfter(float t)
